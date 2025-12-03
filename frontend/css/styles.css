@@ -50,10 +50,11 @@
     --transition-slow: 350ms ease;
     
     /* Z-Index Scale */
-    --z-sidebar: 100;
-    --z-header: 200;
-    --z-modal: 1000;
-    --z-toast: 1100;
+    --z-header: 100;
+    --z-backdrop: 900;
+    --z-sidebar: 1000;
+    --z-modal: 2000;
+    --z-toast: 3000;
 }
 
 /* Dark Theme */
@@ -213,6 +214,10 @@ body {
     font-size: 0.875rem;
 }
 
+.conversation-item {
+    min-height: 44px;
+}
+
 .conversation-item__delete {
     opacity: 0;
     transition: opacity var(--transition-fast);
@@ -227,14 +232,14 @@ body {
 /* Sidebar Toggle */
 .sidebar-toggle {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: calc(var(--z-sidebar) + 1);
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: calc(var(--z-header) + 1);
     width: 44px;
     height: 44px;
     border-radius: var(--radius-md);
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    background: transparent;
+    border: none;
     color: var(--color-text);
     cursor: pointer;
     display: none;
@@ -245,6 +250,23 @@ body {
 
 .sidebar-toggle:hover {
     background: var(--color-bg-tertiary);
+}
+
+/* Sidebar Backdrop */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: var(--z-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-backdrop.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ============================================
@@ -686,6 +708,7 @@ body {
 /* Input Area */
 .chat__input-area {
     padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-border);
     background: var(--color-bg);
     flex-shrink: 0;
@@ -1313,9 +1336,10 @@ body {
         top: 0;
         height: 100%;
         transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
     }
     
-    .sidebar:not(.collapsed) {
+    .sidebar.mobile-open {
         transform: translateX(0);
     }
     
@@ -1324,7 +1348,7 @@ body {
     }
     
     .chat__header {
-        padding-left: 4rem;
+        padding-left: 3.5rem;
     }
     
     .chat__title h1 {

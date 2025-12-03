@@ -54,6 +54,9 @@ async function init() {
     // Apply sidebar state
     if (state.settings.sidebarCollapsed) {
         ui.toggleSidebar(true);
+    } else if (window.innerWidth <= 768) {
+        // Force collapse on mobile init if not already set
+        ui.toggleSidebar(true);
     }
 
     // Apply compare mode state
@@ -800,7 +803,19 @@ function setupEventListeners() {
         updateSetting('sidebarCollapsed', collapsed);
     });
 
-    ui.elements.newChatBtn.addEventListener('click', createNewConversation);
+    // Close sidebar when clicking backdrop (mobile)
+    ui.elements.sidebarBackdrop.addEventListener('click', () => {
+        ui.toggleSidebar(true); // Collapse
+        updateSetting('sidebarCollapsed', true);
+    });
+
+    ui.elements.newChatBtn.addEventListener('click', () => {
+        createNewConversation();
+        // Close sidebar on mobile after clicking new chat
+        if (window.innerWidth <= 768) {
+            ui.toggleSidebar(true);
+        }
+    });
 
     ui.elements.conversationList.addEventListener('click', (e) => {
         const item = e.target.closest('.conversation-item');
@@ -814,6 +829,11 @@ function setupEventListeners() {
         }
 
         loadConversation(parseInt(item.dataset.id));
+        
+        // Close sidebar on mobile after selecting conversation
+        if (window.innerWidth <= 768) {
+            ui.toggleSidebar(true);
+        }
     });
 
     // Model loading

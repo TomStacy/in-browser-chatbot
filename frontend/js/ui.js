@@ -45,6 +45,7 @@ export const elements = {
     
     // Sidebar
     sidebar: document.getElementById('sidebar'),
+    sidebarBackdrop: document.getElementById('sidebar-backdrop'),
     sidebarToggle: document.getElementById('sidebar-toggle'),
     newChatBtn: document.getElementById('new-chat-btn'),
     conversationList: document.getElementById('conversation-list'),
@@ -134,10 +135,25 @@ export function getEffectiveTheme() {
 // ============================================
 
 export function toggleSidebar(collapsed) {
+    // Desktop behavior
     elements.sidebar.classList.toggle('collapsed', collapsed);
+    
+    // Mobile behavior
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        // On mobile, "collapsed" means hidden (default), so !collapsed means open
+        // But we are using a specific class 'mobile-open' for clarity
+        const isOpen = !collapsed;
+        elements.sidebar.classList.toggle('mobile-open', isOpen);
+        elements.sidebarBackdrop.classList.toggle('visible', isOpen);
+    }
 }
 
 export function isSidebarCollapsed() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        return !elements.sidebar.classList.contains('mobile-open');
+    }
     return elements.sidebar.classList.contains('collapsed');
 }
 
