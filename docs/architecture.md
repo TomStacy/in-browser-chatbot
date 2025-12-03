@@ -58,7 +58,7 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 | Layer | Technology | Rationale |
 |-------|------------|-----------|
 | **UI** | Vanilla JS + CSS | Zero dependencies, fastest load, simpler caching |
-| **ML Runtime** | transformers.js v2.17.2 | Best-in-class browser ML, WebGPU support |
+| **ML Runtime** | transformers.js v3.8.0 | Best-in-class browser ML, WebGPU support |
 | **Storage** | IndexedDB (Dexie.js v3.2.4) | Structured chat storage, simple API |
 | **Offline** | Service Worker + Cache API | Cache-first strategy, PWA support |
 | **Styling** | CSS Custom Properties | Dark/light themes, no build step |
@@ -70,8 +70,10 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 
 | Model | Size | Use Case |
 |-------|------|----------|
-| `onnx-community/Qwen2.5-0.5B-Instruct` | ~400MB | Lite option, faster download |
-| `Xenova/Phi-3-mini-4k-instruct_q4` | ~1.5GB | Full capability, best quality |
+| `HuggingFaceTB/SmolLM2-1.7B-Instruct` | ~1.7GB | Balanced performance |
+| `onnx-community/granite-3.0-2b-instruct` | ~2GB | High quality instruction following |
+| `onnx-community/Qwen2.5-1.5B-Instruct` | ~1.5GB | Fast and capable |
+| `onnx-community/Phi-3.5-mini-instruct-onnx-web` | ~2.2GB | Best reasoning capabilities |
 
 ---
 
@@ -160,7 +162,7 @@ Benefits:
 
 | Resource Type | Strategy | Rationale |
 |---------------|----------|-----------|
-| App shell (HTML, CSS, JS) | Cache-first | Fast loads, update on refresh |
+| App shell (HTML, CSS, JS) | Network-first | Dev friendly, ensures latest version |
 | Model files (ONNX) | Cache-first | Huge files (~1GB), immutable |
 | CDN resources | Cache-first | Versioned URLs, stable |
 | HuggingFace API | Cache-first | Model weights don't change |

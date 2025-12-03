@@ -190,11 +190,11 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.5rem;
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: background var(--transition-fast);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
 }
 
 .conversation-item:hover {
@@ -216,6 +216,8 @@ body {
 .conversation-item__delete {
     opacity: 0;
     transition: opacity var(--transition-fast);
+    width: 28px !important;
+    height: 28px !important;
 }
 
 .conversation-item:hover .conversation-item__delete {
@@ -445,6 +447,21 @@ body {
     align-self: flex-start;
 }
 
+/* Comparison Mode Group */
+.message-group {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    align-self: stretch;
+}
+
+.message-group .message {
+    flex: 1;
+    max-width: none;
+    min-width: 0;
+    width: 0;
+}
+
 .message__bubble {
     padding: 0.875rem 1rem;
     border-radius: var(--radius-lg);
@@ -544,10 +561,18 @@ body {
     flex-shrink: 0;
 }
 
+.model-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
 .model-selector {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    flex: 1;
+    min-width: 280px;
 }
 
 .model-selector .select {
@@ -623,6 +648,11 @@ body {
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.btn.active {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
 }
 
 .btn--primary {

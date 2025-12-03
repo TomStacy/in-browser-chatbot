@@ -49,6 +49,9 @@ export const elements = {
     // Input
     modelSelect: document.getElementById('model-select'),
     loadModelBtn: document.getElementById('load-model-btn'),
+    compareModelSelector: document.getElementById('compare-model-selector'),
+    modelSelectCompare: document.getElementById('model-select-compare'),
+    loadModelCompareBtn: document.getElementById('load-model-compare-btn'),
     chatInput: document.getElementById('chat-input'),
     sendBtn: document.getElementById('send-btn'),
     stopBtn: document.getElementById('stop-btn'),
@@ -240,13 +243,108 @@ export function appendMessage(message) {
     scrollToBottom();
 }
 
+export function toggleCompareMode(enabled) {
+    elements.compareModelSelector.classList.toggle('hidden', !enabled);
+    elements.compareToggle.classList.toggle('active', enabled);
+}
+
+export function createComparisonRow(model1, model2) {
+    const rowId = 'row-' + Date.now();
+    const id1 = 'streaming-' + Date.now() + '-1';
+    const id2 = 'streaming-' + Date.now() + '-2';
+    
+    const modelName1 = model1 ? getModelDisplayName(model1) : null;
+    const modelName2 = model2 ? getModelDisplayName(model2) : null;
+
+    const html = `
+        <div class="message-group" id="${rowId}">
+            <article class="message message--assistant" data-id="${id1}">
+                <div class="message__bubble">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <div class="message__meta">
+                    ${modelName1 ? `<span class="message__model">${modelName1}</span>` : ''}
+                    <time class="message__time">now</time>
+                </div>
+            </article>
+            <article class="message message--assistant" data-id="${id2}">
+                <div class="message__bubble">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <div class="message__meta">
+                    ${modelName2 ? `<span class="message__model">${modelName2}</span>` : ''}
+                    <time class="message__time">now</time>
+                </div>
+            </article>
+        </div>
+    `;
+
+    // Remove welcome if present
+    const welcome = elements.messageList.querySelector('.welcome');
+    if (welcome) {
+        welcome.remove();
+    }
+
+    elements.messageList.insertAdjacentHTML('beforeend', html);
+    scrollToBottom();
+
+    return { rowId, id1, id2 };
+}
+
+export function renderComparisonGroup(msg1, msg2) {
+    const timeStr = formatTime(msg1.createdAt);
+    const modelName1 = msg1.model ? getModelDisplayName(msg1.model) : null;
+    const modelName2 = msg2.model ? getModelDisplayName(msg2.model) : null;
+    
+    const contentHtml1 = marked.parse(msg1.content);
+    const contentHtml2 = marked.parse(msg2.content);
+
+    return `
+        <div class="message-group">
+            <article class="message message--assistant" data-id="${msg1.id}">
+                <div class="message__bubble">${contentHtml1}</div>
+                <div class="message__meta">
+                    ${modelName1 ? `<span class="message__model">${modelName1}</span>` : ''}
+                    <time class="message__time">${timeStr}</time>
+                </div>
+            </article>
+            <article class="message message--assistant" data-id="${msg2.id}">
+                <div class="message__bubble">${contentHtml2}</div>
+                <div class="message__meta">
+                    ${modelName2 ? `<span class="message__model">${modelName2}</span>` : ''}
+                    <time class="message__time">${timeStr}</time>
+                </div>
+            </article>
+        </div>
+    `;
+}
+
 export function renderMessages(messages) {
     if (messages.length === 0) {
         showWelcome();
         return;
     }
     
-    elements.messageList.innerHTML = messages.map(msg => renderMessage(msg)).join('');
+    let html = '';
+    for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+        const nextMsg = messages[i+1];
+        
+        // Check if this and next message are assistant messages (simple grouping heuristic)
+        // Ideally we should check if they are responses to the same user message, but this works for now
+        if (msg.role === 'assistant' && nextMsg?.role === 'assistant') {
+            html += renderComparisonGroup(msg, nextMsg);
+            i++; // Skip next message
+        } else {
+            html += renderMessage(msg);
+        }
+    }
+    
+    elements.messageList.innerHTML = html;
     scrollToBottom(false); // No smooth scroll on initial render
 }
 

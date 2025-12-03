@@ -12,7 +12,7 @@ import {
     generateTitle,
     debounce,
     isWebGPUSupported
-} from './utils.js?v=2';
+} from './utils.js?v=7';
 
 // ============================================
 // Application State
@@ -21,6 +21,7 @@ import {
 const state = {
     currentConversationId: null,
     currentModel: null,
+    compareModel: null,
     isGenerating: false,
     settings: null,
     conversations: []
@@ -51,6 +52,11 @@ async function init() {
     // Apply sidebar state
     if (state.settings.sidebarCollapsed) {
         ui.toggleSidebar(true);
+    }
+
+    // Apply compare mode state
+    if (state.settings.compareMode) {
+        ui.toggleCompareMode(true);
     }
 
     // Load conversations
@@ -174,10 +180,8 @@ function setupModelCallbacks() {
     };
 
     modelManager.onModelReady = (modelId, device) => {
-        state.currentModel = modelId;
         ui.showProgress(false);
         ui.setStatus('ready', `Model ready (${device || 'wasm'})`);
-        ui.updateModelBadge(modelId);
         ui.setInputEnabled(true);
         ui.setModelSelectEnabled(true);
         ui.showToast('Model loaded successfully!', 'success');
@@ -206,10 +210,43 @@ async function loadModel() {
 
     try {
         await modelManager.initModel(modelId);
+        state.currentModel = modelId;
+        ui.updateModelBadge(modelId);
     } catch (error) {
         console.error('Failed to load model:', error);
         // Error handled by callback
     }
+}
+
+async function loadCompareModel() {
+    const modelId = ui.elements.modelSelectCompare.value;
+    if (!modelId) {
+        ui.showToast('Please select a comparison model', 'warning');
+        return;
+    }
+
+    ui.elements.loadModelCompareBtn.disabled = true;
+    ui.elements.modelSelectCompare.disabled = true;
+    
+    ui.showToast('Loading comparison model...', 'info');
+
+    try {
+        await modelManager.initModel(modelId);
+        state.compareModel = modelId;
+        ui.showToast('Comparison model loaded!', 'success');
+        ui.elements.loadModelCompareBtn.textContent = 'Loaded';
+    } catch (error) {
+        console.error('Failed to load comparison model:', error);
+        ui.elements.loadModelCompareBtn.disabled = false;
+        ui.elements.modelSelectCompare.disabled = false;
+        ui.showToast(`Failed to load comparison model: ${error.message}`, 'error');
+    }
+}
+
+async function toggleCompareMode() {
+    const enabled = !state.settings.compareMode;
+    await updateSetting('compareMode', enabled);
+    ui.toggleCompareMode(enabled);
 }
 
 // ============================================
@@ -272,12 +309,41 @@ async function generateResponse() {
         content: m.content
     }));
 
-    // Create streaming message element
-    const streamingId = ui.createStreamingMessage(state.currentModel);
-    let fullResponse = '';
-
     try {
-        await modelManager.generate(state.currentModel, chatHistory, {
+        if (state.settings.compareMode && state.compareModel && modelManager.isModelReady(state.compareModel)) {
+            // Dual generation
+            const { id1, id2 } = ui.createComparisonRow(state.currentModel, state.compareModel);
+            
+            if (state.currentModel === state.compareModel) {
+                // Run sequentially if using the same model to avoid worker conflict
+                await generateSingleResponse(state.currentModel, id1, chatHistory);
+                await generateSingleResponse(state.compareModel, id2, chatHistory);
+            } else {
+                // Run in parallel for different models
+                const p1 = generateSingleResponse(state.currentModel, id1, chatHistory);
+                const p2 = generateSingleResponse(state.compareModel, id2, chatHistory);
+                await Promise.all([p1, p2]);
+            }
+        } else {
+            // Single generation
+            const streamingId = ui.createStreamingMessage(state.currentModel);
+            await generateSingleResponse(state.currentModel, streamingId, chatHistory);
+        }
+    } catch (error) {
+        console.error('Generation error:', error);
+        ui.showToast(`Error: ${error.message}`, 'error');
+    } finally {
+        state.isGenerating = false;
+        ui.setGenerating(false);
+        ui.focusInput();
+    }
+}
+
+async function generateSingleResponse(modelId, streamingId, chatHistory) {
+    let fullResponse = '';
+    
+    try {
+        await modelManager.generate(modelId, chatHistory, {
             temperature: state.settings.temperature,
             maxTokens: state.settings.maxTokens,
             systemPrompt: state.settings.systemPrompt,
@@ -297,35 +363,18 @@ async function generateResponse() {
                 );
 
                 ui.finalizeStreamingMessage(streamingId, content, msgId);
-            },
-
-            onAborted: () => {
-                if (fullResponse) {
-                    ui.finalizeStreamingMessage(streamingId, fullResponse + '\n\n*[Generation stopped]*', null);
-                } else {
-                    ui.removeStreamingMessage(streamingId);
-                }
-            },
-
-            onError: (message) => {
-                ui.removeStreamingMessage(streamingId);
-                ui.showToast(`Generation failed: ${message}`, 'error');
             }
         });
     } catch (error) {
-        console.error('Generation error:', error);
         ui.removeStreamingMessage(streamingId);
-        ui.showToast(`Error: ${error.message}`, 'error');
-    } finally {
-        state.isGenerating = false;
-        ui.setGenerating(false);
-        ui.focusInput();
+        ui.showToast(`Generation error (${modelId}): ${error.message}`, 'error');
     }
 }
 
 function stopGeneration() {
-    if (state.isGenerating && state.currentModel) {
-        modelManager.abort(state.currentModel);
+    if (state.isGenerating) {
+        if (state.currentModel) modelManager.abort(state.currentModel);
+        if (state.compareModel) modelManager.abort(state.compareModel);
     }
 }
 
@@ -479,6 +528,15 @@ function setupEventListeners() {
     });
 
     ui.elements.loadModelBtn.addEventListener('click', loadModel);
+
+    // Compare mode
+    ui.elements.compareToggle.addEventListener('click', toggleCompareMode);
+    
+    ui.elements.modelSelectCompare.addEventListener('change', () => {
+        ui.elements.loadModelCompareBtn.disabled = !ui.elements.modelSelectCompare.value;
+    });
+    
+    ui.elements.loadModelCompareBtn.addEventListener('click', loadCompareModel);
 
     // Chat input
     ui.elements.chatInput.addEventListener('keydown', (e) => {

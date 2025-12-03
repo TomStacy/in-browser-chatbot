@@ -3,7 +3,7 @@
  * Caches app shell and model files for offline use
  */
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `local-ai-chat-${CACHE_VERSION}`;
 
 // App shell files to cache immediately
@@ -116,8 +116,8 @@ self.addEventListener('fetch', (event) => {
         // CDN resources: Cache-first
         event.respondWith(cacheFirst(event.request));
     } else if (isAppShellRequest(url)) {
-        // App shell: Cache-first with network fallback
-        event.respondWith(cacheFirst(event.request));
+        // App shell: Network-first for development friendliness
+        event.respondWith(networkFirst(event.request));
     } else {
         // Everything else: Network-first with cache fallback
         event.respondWith(networkFirst(event.request));
