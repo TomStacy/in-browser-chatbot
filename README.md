@@ -13,7 +13,8 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
 - **Model Comparison:** Run two models side-by-side to compare their outputs.
 - **Persistent History:** Conversations are saved locally in your browser.
 - **Rich UI:** Dark/Light mode, markdown rendering, code highlighting, and more.
-- **PWA Ready:** Installable as a desktop or mobile app (coming soon).
+- **PWA Ready:** Installable as a desktop or mobile app.
+- **Mobile Optimized:** Fully responsive design with touch-friendly interface.
 
 ## 🚀 Getting Started
 
