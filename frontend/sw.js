@@ -16,7 +16,6 @@ const APP_SHELL = [
     '/js/utils.js',
     '/js/chat-store.js',
     '/js/model-manager.js',
-    '/js/model-worker.js',
     '/js/export.js',
     '/manifest.json'
 ];
