@@ -4,7 +4,7 @@
 
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import { formatTime, escapeHtml, getModelDisplayName } from './utils.js';
+import { formatTime, escapeHtml, getModelDisplayName, APP_VERSION } from './utils.js';
 
 // Configure marked with highlight.js
 const renderer = {
@@ -106,7 +106,10 @@ export const elements = {
     exportMdBtn: document.getElementById('export-md-btn'),
     
     // Toast
-    toastContainer: document.getElementById('toast-container')
+    toastContainer: document.getElementById('toast-container'),
+
+    // App Info
+    appVersion: document.getElementById('app-version')
 };
 
 // ============================================
@@ -642,6 +645,11 @@ export function updateSettingsUI(settings) {
     elements.maxTokensSlider.value = settings.maxTokens ?? 512;
     elements.tokensValue.textContent = settings.maxTokens ?? 512;
     elements.systemPrompt.value = settings.systemPrompt || '';
+    
+    // Update version
+    if (elements.appVersion) {
+        elements.appVersion.textContent = APP_VERSION;
+    }
 }
 
 // ============================================

@@ -285,6 +285,11 @@ export function isRepetitive(text) {
 export const DEFAULT_SYSTEM_PROMPT = `You are a helpful, harmless, and honest AI assistant running entirely in the user's browser. You provide clear, accurate, and thoughtful responses. You can help with a wide variety of tasks including answering questions, writing, coding, analysis, and creative projects. Be concise but thorough.`;
 
 /**
+ * Application Version
+ */
+export const APP_VERSION = '1.0.0';
+
+/**
  * Supported models configuration
  */
 export const SUPPORTED_MODELS = [
