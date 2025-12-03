@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="100% private AI chatbot running entirely in your browser. No server, no data collection, works offline.">
+    <meta name="theme-color" content="#1a1a1a">
+
+    <title>Local AI Chat - 100% Private</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Import Map for ES Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@huggingface/transformers": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.0/dist/transformers.min.js",
+            "dexie": "https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.mjs",
+            "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.esm.js"
+        }
+    }
+    </script>
+</head>
+
+<body data-theme="dark">
+    <!-- App Container -->
+    <div id="app" class="app">
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar__header">
+                <button id="new-chat-btn" class="btn btn--primary btn--full">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+
+            <nav id="conversation-list" class="sidebar__conversations">
+                <!-- Conversations will be rendered here -->
+                <div class="sidebar__empty">
+                    <p>No conversations yet</p>
+                    <p class="text-muted">Start a new chat to begin</p>
+                </div>
+            </nav>
+
+            <div class="sidebar__footer">
+                <button id="settings-btn" class="btn btn--ghost btn--full">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
+                    </svg>
+                    Settings
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Toggle (Mobile) -->
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- Main Chat Area -->
+        <main class="chat">
+            <!-- Chat Header -->
+            <header class="chat__header">
+                <div class="chat__title">
+                    <h1 id="chat-title">New Chat</h1>
+                    <span id="model-badge" class="badge badge--model">No model loaded</span>
+                </div>
+                <div class="chat__actions">
+                    <button id="compare-toggle" class="btn btn--ghost" title="Toggle comparison mode">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="18" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="18" rx="1"></rect>
+                        </svg>
+                    </button>
+                    <button id="export-btn" class="btn btn--ghost" title="Export conversation">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                    <button id="theme-toggle" class="btn btn--ghost" title="Toggle theme">
+                        <svg class="icon icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="icon icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Status Bar -->
+            <div id="status-bar" class="status-bar">
+                <div class="status-bar__content">
+                    <div id="status-icon" class="status-bar__icon">
+                        <div class="spinner"></div>
+                    </div>
+                    <span id="status-text">Initializing...</span>
+                </div>
+                <div id="progress-container" class="progress-container hidden">
+                    <div class="progress">
+                        <div id="progress-bar" class="progress__bar" style="width: 0%"></div>
+                    </div>
+                    <span id="progress-text" class="progress__text">0%</span>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messages-container" class="chat__messages">
+                <div id="message-list" class="message-list">
+                    <!-- Welcome message -->
+                    <div class="welcome">
+                        <div class="welcome__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                        </div>
+                        <h2>Welcome to Local AI Chat</h2>
+                        <p>Your 100% private, offline-capable AI assistant.</p>
+                        <ul class="welcome__features">
+                            <li>🔒 All processing happens on your device</li>
+                            <li>📴 Works offline after initial download</li>
+                            <li>💾 Conversations stored locally</li>
+                            <li>🚀 Powered by WebGPU acceleration</li>
+                        </ul>
+                        <p class="text-muted">Select a model below to get started.</p>
+                    </div>
+                </div>
+
+                <!-- Scroll to bottom button -->
+                <button id="scroll-bottom-btn" class="scroll-bottom-btn hidden" aria-label="Scroll to bottom">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat__input-area">
+                <!-- Model Selector -->
+                <div class="model-selector">
+                    <label for="model-select" class="visually-hidden">Select Model</label>
+                    <select id="model-select" class="select">
+                        <option value="">-- Select a Model --</option>
+                        <option value="HuggingFaceTB/SmolLM2-1.7B-Instruct">SmolLM2-1.7B-Instruct</option>
+                        <option value="onnx-community/granite-3.0-2b-instruct">granite-3.0-2b-instruct</option>
+                        <option value="onnx-community/Qwen2.5-1.5B-Instruct">Qwen 2.5 1.5B (Instruct)</option>
+                        <option value="onnx-community/Phi-3.5-mini-instruct-onnx-web">Phi-3.5-mini-instruct-onnx-web</option>
+                    </select>
+                    <button id="load-model-btn" class="btn btn--primary" disabled>
+                        Load Model
+                    </button>
+                </div>
+
+                <!-- Message Input -->
+                <div class="input-group">
+                    <textarea id="chat-input" class="input-group__textarea"
+                        placeholder="Type your message... (Ctrl+Enter to send)" rows="1" disabled></textarea>
+                    <button id="send-btn" class="btn btn--primary btn--icon" disabled aria-label="Send message">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                    <button id="stop-btn" class="btn btn--danger btn--icon hidden" aria-label="Stop generation">
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="chat__disclaimer">
+                    AI can make mistakes. All processing is local and private.
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <dialog id="settings-modal" class="modal">
+        <div class="modal__content">
+            <header class="modal__header">
+                <h2>Settings</h2>
+                <button id="close-settings-btn" class="btn btn--ghost btn--icon" aria-label="Close settings">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <!-- Theme -->
+                <div class="setting">
+                    <label class="setting__label">Theme</label>
+                    <div class="setting__control">
+                        <select id="theme-select" class="select">
+                            <option value="system">System</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Temperature -->
+                <div class="setting">
+                    <label class="setting__label">
+                        Temperature
+                        <span id="temp-value" class="setting__value">0.7</span>
+                    </label>
+                    <div class="setting__control">
+                        <input type="range" id="temperature-slider" class="slider" min="0" max="2" step="0.1"
+                            value="0.7">
+                    </div>
+                    <p class="setting__help">Higher values make output more random, lower values more focused.</p>
+                </div>
+
+                <!-- Max Tokens -->
+                <div class="setting">
+                    <label class="setting__label">
+                        Max Tokens
+                        <span id="tokens-value" class="setting__value">512</span>
+                    </label>
+                    <div class="setting__control">
+                        <input type="range" id="max-tokens-slider" class="slider" min="64" max="2048" step="64"
+                            value="512">
+                    </div>
+                    <p class="setting__help">Maximum length of the AI response.</p>
+                </div>
+
+                <!-- System Prompt -->
+                <div class="setting">
+                    <label class="setting__label">System Prompt</label>
+                    <div class="setting__control">
+                        <textarea id="system-prompt" class="textarea" rows="4"
+                            placeholder="Enter a custom system prompt..."></textarea>
+                    </div>
+                    <p class="setting__help">Instructions that guide the AI's behavior.</p>
+                    <button id="reset-prompt-btn" class="btn btn--ghost btn--sm">Reset to Default</button>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="setting setting--danger">
+                    <label class="setting__label">Danger Zone</label>
+                    <div class="setting__actions">
+                        <button id="clear-cache-btn" class="btn btn--outline">Clear Model Cache</button>
+                        <button id="clear-all-btn" class="btn btn--danger">Delete All Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Export Modal -->
+    <dialog id="export-modal" class="modal">
+        <div class="modal__content modal__content--sm">
+            <header class="modal__header">
+                <h2>Export Conversation</h2>
+                <button id="close-export-btn" class="btn btn--ghost btn--icon" aria-label="Close">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal__body">
+                <p>Choose export format:</p>
+                <div class="export-options">
+                    <button id="export-json-btn" class="btn btn--outline btn--full">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        Export as JSON
+                    </button>
+                    <button id="export-md-btn" class="btn btn--outline btn--full">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        Export as Markdown
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main Script -->
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
