@@ -541,7 +541,6 @@ async function handleEditMessage(messageId, newContent) {
 }
 
 async function generateSingleResponse(modelId, streamingId, chatHistory) {
-    let fullResponse = '';
     let timeoutId = null;
     let timedOut = false;
     let repetitionDetected = false;
@@ -566,7 +565,6 @@ async function generateSingleResponse(modelId, streamingId, chatHistory) {
 
             onToken: (token, accumulated) => {
                 resetTimeout();
-                fullResponse = accumulated;
                 
                 // Check for repetition
                 if (isRepetitive(accumulated)) {
