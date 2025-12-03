@@ -25,7 +25,8 @@ const state = {
     compareModel: null,
     isGenerating: false,
     settings: null,
-    conversations: []
+    conversations: [],
+    deferredPrompt: null
 };
 
 // ============================================
@@ -65,6 +66,7 @@ async function init() {
 
     // Set up event listeners
     setupEventListeners();
+    setupInstallPrompt();
     ui.setupCopyListeners();
     ui.setupEditListeners(handleEditMessage);
 
@@ -89,10 +91,50 @@ async function registerServiceWorker() {
         try {
             const registration = await navigator.serviceWorker.register('sw.js');
             console.log('✅ Service Worker registered:', registration.scope);
+
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('Service Worker update found...');
+
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New worker installed and waiting
+                        console.log('New Service Worker installed and waiting');
+                        showUpdateNotification(registration);
+                    }
+                });
+            });
+
+            // Handle controller change (reload page)
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
+
+            // Check if there's already a waiting worker
+            if (registration.waiting) {
+                console.log('Service Worker waiting...');
+                showUpdateNotification(registration);
+            }
+
         } catch (error) {
             console.error('❌ Service Worker registration failed:', error);
         }
     }
+}
+
+function showUpdateNotification(registration) {
+    ui.showToast('New version available!', 'info', 0, {
+        text: 'Reload',
+        callback: () => {
+            if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+        }
+    });
 }
 
 // ============================================
@@ -708,6 +750,44 @@ async function handleExport(format) {
         console.error('Export failed:', error);
         ui.showToast('Export failed', 'error');
     }
+}
+
+// ============================================
+// PWA Installation
+// ============================================
+
+function setupInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        state.deferredPrompt = e;
+        // Update UI to notify the user they can add to home screen
+        ui.elements.installBtn.classList.remove('hidden');
+    });
+
+    ui.elements.installBtn.addEventListener('click', async () => {
+        // Hide the app provided install promotion
+        ui.elements.installBtn.classList.add('hidden');
+        // Show the install prompt
+        if (state.deferredPrompt) {
+            state.deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            const { outcome } = await state.deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            // We've used the prompt, and can't use it again, throw it away
+            state.deferredPrompt = null;
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        // Hide the app-provided install promotion
+        ui.elements.installBtn.classList.add('hidden');
+        // Clear the deferredPrompt so it can be garbage collected
+        state.deferredPrompt = null;
+        console.log('PWA was installed');
+        ui.showToast('App installed successfully!', 'success');
+    });
 }
 
 // ============================================

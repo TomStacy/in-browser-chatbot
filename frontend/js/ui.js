@@ -48,6 +48,7 @@ export const elements = {
     sidebarToggle: document.getElementById('sidebar-toggle'),
     newChatBtn: document.getElementById('new-chat-btn'),
     conversationList: document.getElementById('conversation-list'),
+    installBtn: document.getElementById('install-btn'),
     settingsBtn: document.getElementById('settings-btn'),
     
     // Chat Header
@@ -647,18 +648,29 @@ export function updateSettingsUI(settings) {
 // Toast Notifications
 // ============================================
 
-export function showToast(message, type = 'info', duration = 4000) {
+export function showToast(message, type = 'info', duration = 4000, action = null) {
     const toast = document.createElement('div');
     toast.className = `toast toast--${type}`;
     toast.innerHTML = `<span class="toast__message">${escapeHtml(message)}</span>`;
     
+    if (action) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn--sm btn--white';
+        btn.textContent = action.text;
+        btn.style.marginLeft = '1rem';
+        btn.onclick = action.callback;
+        toast.appendChild(btn);
+    }
+
     elements.toastContainer.appendChild(toast);
     
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
+    if (duration > 0) {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
 }
 
 // ============================================

@@ -16,7 +16,7 @@ Building a **fully offline-capable AI chatbot** that runs entirely in the browse
 | Phase 2 | ✅ Complete | Chat Persistence |
 | Phase 3 | ✅ Complete | Multi-Model Support |
 | Phase 4 | ✅ Complete | Polish & UX |
-| Phase 5 | 🔲 Not Started | PWA & Final Polish |
+| Phase 5 | 🔄 In Progress | PWA & Final Polish |
 
 ---
 
@@ -150,17 +150,17 @@ frontend/
 
 ---
 
-## Phase 5: PWA & Final Polish 🔲 NOT STARTED
+## Phase 5: PWA & Final Polish 🔄 IN PROGRESS
 
 **Goal:** Installable, offline-first PWA
 
 ### Phase 5 Tasks
 
-- [ ] PWA install prompt handling
-- [ ] "Add to Home Screen" button
-- [ ] Offline status indicator in UI
-- [ ] Update available notification
-- [ ] Service worker update flow
+- [x] PWA install prompt handling
+- [x] "Add to Home Screen" button
+- [x] Offline status indicator in UI
+- [x] Update available notification
+- [x] Service worker update flow
 - [ ] App version display in settings
 - [ ] Performance optimization audit
 - [ ] Lighthouse PWA audit fixes
