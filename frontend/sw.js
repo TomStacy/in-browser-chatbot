@@ -17,7 +17,10 @@ const APP_SHELL = [
     '/js/chat-store.js',
     '/js/model-manager.js',
     '/js/export.js',
-    '/manifest.json'
+    '/manifest.json',
+    '/icons/favicon.svg',
+    '/icons/icon-192.svg',
+    '/icons/icon-512.svg'
 ];
 
 // CDN resources to cache

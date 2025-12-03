@@ -160,8 +160,8 @@ frontend/
 - [x] Update available notification
 - [x] Service worker update flow
 - [x] App version display in settings
-- [ ] Performance optimization audit
-- [ ] Lighthouse PWA audit fixes
+- [x] Performance optimization audit
+- [x] Lighthouse PWA audit fixes
 - [ ] Final testing on mobile devices
 - [ ] README.md for repository
 
