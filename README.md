@@ -67,6 +67,24 @@ The application currently supports the following ONNX-optimized models:
 - **Storage:** IndexedDB (via Dexie.js)
 - **Offline:** Service Workers & Cache API
 
+## 💻 Development
+
+### Linting
+
+This project uses ESLint for code quality. To run the linter:
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Run the lint command:
+
+   ```bash
+   npm run lint
+   ```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
