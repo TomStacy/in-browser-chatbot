@@ -3,10 +3,34 @@
  */
 
 import { marked } from 'marked';
+import hljs from 'highlight.js';
 import { formatTime, escapeHtml, getModelDisplayName } from './utils.js';
 
-// Configure marked for safe rendering
-marked.setOptions({
+// Configure marked with highlight.js
+const renderer = {
+    code(code, infostring) {
+        const language = hljs.getLanguage(infostring) ? infostring : 'plaintext';
+        const highlighted = hljs.highlight(code, { language }).value;
+        return `
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">${language}</span>
+                    <button class="btn-copy-code" aria-label="Copy code">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre><code class="hljs language-${language}">${highlighted}</code></pre>
+            </div>
+        `;
+    }
+};
+
+marked.use({ 
+    renderer,
     breaks: true,
     gfm: true
 });
@@ -55,12 +79,15 @@ export const elements = {
     chatInput: document.getElementById('chat-input'),
     sendBtn: document.getElementById('send-btn'),
     stopBtn: document.getElementById('stop-btn'),
+    regenerateBtn: document.getElementById('regenerate-btn'),
     
     // Modals
     settingsModal: document.getElementById('settings-modal'),
     closeSettingsBtn: document.getElementById('close-settings-btn'),
     exportModal: document.getElementById('export-modal'),
     closeExportBtn: document.getElementById('close-export-btn'),
+    shortcutsModal: document.getElementById('shortcuts-modal'),
+    closeShortcutsBtn: document.getElementById('close-shortcuts-btn'),
     
     // Settings Controls
     themeSelect: document.getElementById('theme-select'),
@@ -219,6 +246,15 @@ export function renderMessage(message) {
         ? marked.parse(message.content)
         : escapeHtml(message.content).replace(/\n/g, '<br>');
     
+    const editBtn = message.role === 'user' ? `
+        <button class="btn-edit-message" aria-label="Edit message">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </button>
+    ` : '';
+
     return `
         <article class="message message--${message.role}" data-id="${message.id || ''}">
             <div class="message__bubble">
@@ -227,6 +263,13 @@ export function renderMessage(message) {
             <div class="message__meta">
                 ${modelName ? `<span class="message__model">${modelName}</span>` : ''}
                 <time class="message__time">${timeStr}</time>
+                ${editBtn}
+                <button class="btn-copy-message" aria-label="Copy message">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
             </div>
         </article>
     `;
@@ -310,6 +353,12 @@ export function renderComparisonGroup(msg1, msg2) {
                 <div class="message__meta">
                     ${modelName1 ? `<span class="message__model">${modelName1}</span>` : ''}
                     <time class="message__time">${timeStr}</time>
+                    <button class="btn-copy-message" aria-label="Copy message">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
                 </div>
             </article>
             <article class="message message--assistant" data-id="${msg2.id}">
@@ -317,6 +366,12 @@ export function renderComparisonGroup(msg1, msg2) {
                 <div class="message__meta">
                     ${modelName2 ? `<span class="message__model">${modelName2}</span>` : ''}
                     <time class="message__time">${timeStr}</time>
+                    <button class="btn-copy-message" aria-label="Copy message">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
                 </div>
             </article>
         </div>
@@ -410,6 +465,46 @@ export function removeStreamingMessage(id) {
     }
 }
 
+export function updateMessageError(id, errorMessage, onRetry) {
+    const messageEl = elements.messageList.querySelector(`[data-id="${id}"]`);
+    if (messageEl) {
+        const bubble = messageEl.querySelector('.message__bubble');
+        bubble.innerHTML = `
+            <div class="error-message">
+                <div class="error-message__content">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>${escapeHtml(errorMessage)}</span>
+                </div>
+                <button class="btn btn--sm btn--outline btn-retry">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Retry
+                </button>
+            </div>
+        `;
+        bubble.classList.add('message__bubble--error');
+        
+        const retryBtn = bubble.querySelector('.btn-retry');
+        retryBtn.addEventListener('click', () => {
+            // Reset UI state for retry
+            bubble.classList.remove('message__bubble--error');
+            bubble.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            onRetry();
+        });
+    }
+}
+
 // ============================================
 // Scroll Management
 // ============================================
@@ -441,6 +536,14 @@ export function setGenerating(generating) {
     elements.sendBtn.classList.toggle('hidden', generating);
     elements.stopBtn.classList.toggle('hidden', !generating);
     elements.chatInput.disabled = generating;
+    
+    if (generating) {
+        elements.regenerateBtn.classList.add('hidden');
+    }
+}
+
+export function setRegenerateEnabled(enabled) {
+    elements.regenerateBtn.classList.toggle('hidden', !enabled);
 }
 
 export function clearInput() {
@@ -519,6 +622,14 @@ export function closeExportModal() {
     closeModal(elements.exportModal);
 }
 
+export function openShortcutsModal() {
+    openModal(elements.shortcutsModal);
+}
+
+export function closeShortcutsModal() {
+    closeModal(elements.shortcutsModal);
+}
+
 // ============================================
 // Settings UI
 // ============================================
@@ -548,6 +659,135 @@ export function showToast(message, type = 'info', duration = 4000) {
         toast.style.transform = 'translateX(100%)';
         setTimeout(() => toast.remove(), 300);
     }, duration);
+}
+
+// ============================================
+// Edit Functionality
+// ============================================
+
+export function setupEditListeners(onEdit) {
+    elements.messageList.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.btn-edit-message');
+        if (editBtn) {
+            const messageEl = editBtn.closest('.message');
+            const bubble = messageEl.querySelector('.message__bubble');
+            // For user messages, innerText preserves newlines correctly because we used <br>
+            const currentContent = bubble.innerText; 
+            
+            showEditForm(messageEl, currentContent, onEdit);
+        }
+    });
+}
+
+function showEditForm(messageEl, content, onSave) {
+    const bubble = messageEl.querySelector('.message__bubble');
+    const originalContent = bubble.innerHTML;
+    
+    // Prevent multiple edit forms
+    if (bubble.querySelector('.edit-form')) return;
+
+    bubble.innerHTML = `
+        <div class="edit-form">
+            <textarea class="edit-form__textarea" rows="1">${content}</textarea>
+            <div class="edit-form__actions">
+                <button class="btn btn--sm btn--primary btn-save">Save & Regenerate</button>
+                <button class="btn btn--sm btn--ghost btn-cancel">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    const textarea = bubble.querySelector('textarea');
+    
+    // Auto-resize
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+    textarea.focus();
+    
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+    });
+
+    // Handle Enter to save (Ctrl+Enter)
+    textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            save();
+        }
+        if (e.key === 'Escape') {
+            cancel();
+        }
+    });
+    
+    const saveBtn = bubble.querySelector('.btn-save');
+    const cancelBtn = bubble.querySelector('.btn-cancel');
+    
+    function cancel() {
+        bubble.innerHTML = originalContent;
+    }
+
+    function save() {
+        const newContent = textarea.value.trim();
+        if (newContent && newContent !== content) {
+            onSave(parseInt(messageEl.dataset.id), newContent);
+        } else {
+            cancel();
+        }
+    }
+    
+    cancelBtn.addEventListener('click', cancel);
+    saveBtn.addEventListener('click', save);
+}
+
+// ============================================
+// Copy Functionality
+// ============================================
+
+export function setupCopyListeners() {
+    elements.messageList.addEventListener('click', async (e) => {
+        // Copy Code Block
+        const copyCodeBtn = e.target.closest('.btn-copy-code');
+        if (copyCodeBtn) {
+            const codeBlock = copyCodeBtn.closest('.code-block');
+            const code = codeBlock.querySelector('code').textContent;
+            await copyToClipboard(code, copyCodeBtn);
+            return;
+        }
+
+        // Copy Message
+        const copyMsgBtn = e.target.closest('.btn-copy-message');
+        if (copyMsgBtn) {
+            const messageEl = copyMsgBtn.closest('.message');
+            const bubble = messageEl.querySelector('.message__bubble');
+            const text = bubble.innerText;
+            await copyToClipboard(text, copyMsgBtn);
+            return;
+        }
+    });
+}
+
+async function copyToClipboard(text, button) {
+    try {
+        await navigator.clipboard.writeText(text);
+        
+        // Visual feedback
+        const originalHtml = button.innerHTML;
+        button.innerHTML = `
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            ${button.querySelector('span') ? '<span>Copied!</span>' : ''}
+        `;
+        button.classList.add('success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+            button.classList.remove('success');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        showToast('Failed to copy to clipboard', 'error');
+    }
 }
 
 // ============================================

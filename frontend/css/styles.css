@@ -230,8 +230,8 @@ body {
     top: 1rem;
     left: 1rem;
     z-index: calc(var(--z-sidebar) + 1);
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: var(--radius-md);
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
@@ -370,7 +370,7 @@ body {
 }
 
 .message-list {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1.5rem;
     display: flex;
@@ -481,12 +481,142 @@ body {
     border: 1px solid var(--color-border);
 }
 
+/* Code Block Wrapper */
+.code-block {
+    margin: 0.75rem 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+}
+
+.code-block__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.code-block pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+/* Copy Buttons */
+.btn-copy-code {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.btn-copy-code:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+}
+
+.btn-copy-message {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    opacity: 0; /* Hide by default */
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message:hover .btn-copy-message {
+    opacity: 1;
+}
+
+.btn-copy-message:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+}
+
+.btn-edit-message {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    opacity: 0; /* Hide by default */
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message:hover .btn-edit-message {
+    opacity: 1;
+}
+
+.btn-edit-message:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+}
+
+.btn-copy-code.success,
+.btn-copy-message.success {
+    color: var(--color-success);
+}
+
+/* Edit Form */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.edit-form__textarea {
+    width: 100%;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    resize: none;
+}
+
+.edit-form__textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.edit-form__actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
 .message__meta {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-top: 0.375rem;
     padding: 0 0.25rem;
+    min-height: 24px;
 }
 
 .message--user .message__meta {
@@ -534,8 +664,8 @@ body {
     position: absolute;
     bottom: 1rem;
     right: 1rem;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
@@ -938,6 +1068,44 @@ body {
     margin-top: 1rem;
 }
 
+/* Shortcuts Modal */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-desc {
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+.shortcut-key {
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    min-width: 24px;
+    text-align: center;
+    display: inline-block;
+}
+
 /* ============================================
    Toast Notifications
    ============================================ */
@@ -1039,17 +1207,20 @@ body {
 
 .message__bubble pre {
     margin: 0.75rem 0;
-    padding: 1rem;
-    background: var(--color-bg-tertiary);
     border-radius: var(--radius-md);
-    overflow-x: auto;
+    overflow: hidden;
 }
 
 .message__bubble pre code {
-    padding: 0;
-    background: none;
     font-size: 0.8125rem;
     line-height: 1.6;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* Override highlight.js background to match theme if needed, 
+   but for now we let the library theme take precedence */
+.hljs {
+    padding: 1rem !important; /* Ensure consistent padding */
 }
 
 .message__bubble ul,
@@ -1097,6 +1268,38 @@ body {
 .message__bubble h2:first-child,
 .message__bubble h3:first-child {
     margin-top: 0;
+}
+
+/* Error Message in Bubble */
+.message__bubble--error {
+    background: var(--color-bg-secondary) !important;
+    border: 1px solid var(--color-danger) !important;
+    color: var(--color-danger) !important;
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.error-message__content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.error-message .btn-retry {
+    align-self: flex-start;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.error-message .btn-retry:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
 }
 
 /* ============================================

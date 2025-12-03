@@ -11,7 +11,8 @@ import {
     DEFAULT_SYSTEM_PROMPT,
     generateTitle,
     debounce,
-    isWebGPUSupported
+    isWebGPUSupported,
+    isRepetitive
 } from './utils.js?v=7';
 
 // ============================================
@@ -64,6 +65,8 @@ async function init() {
 
     // Set up event listeners
     setupEventListeners();
+    ui.setupCopyListeners();
+    ui.setupEditListeners(handleEditMessage);
 
     // Set up model manager callbacks
     setupModelCallbacks();
@@ -112,6 +115,7 @@ async function createNewConversation() {
     ui.setChatTitle('New Chat');
     ui.clearInput();
     ui.focusInput();
+    ui.setRegenerateEnabled(false);
 
     // Collapse sidebar on mobile
     if (window.innerWidth <= 768) {
@@ -134,11 +138,52 @@ async function loadConversation(id) {
     ui.renderMessages(messages);
     ui.setActiveConversation(id);
 
-    // Restore model selection if recorded
-    if (conversation.model) {
-        ui.setSelectedModel(conversation.model);
-        // Update load button state
-        ui.elements.loadModelBtn.disabled = false;
+    // Show regenerate button if there are messages
+    ui.setRegenerateEnabled(messages.length > 0);
+
+    // Restore compare mode
+    const compareMode = !!conversation.compareMode;
+    if (state.settings.compareMode !== compareMode) {
+        await updateSetting('compareMode', compareMode);
+        ui.toggleCompareMode(compareMode);
+    }
+
+    // Restore compare model
+    if (compareMode && conversation.compareModel) {
+        ui.elements.modelSelectCompare.value = conversation.compareModel;
+        
+        if (state.compareModel !== conversation.compareModel) {
+            await loadCompareModel();
+        } else {
+             // Already loaded, just ensure UI state
+             ui.elements.loadModelCompareBtn.textContent = 'Loaded';
+             ui.elements.loadModelCompareBtn.disabled = true;
+             ui.elements.modelSelectCompare.disabled = false;
+        }
+    }
+
+    // Determine which model to select
+    let targetModel = conversation.model;
+    
+    // Prefer the model from the last assistant message
+    const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant' && m.model);
+    if (lastAssistantMessage) {
+        targetModel = lastAssistantMessage.model;
+    }
+
+    // Restore model selection and auto-load
+    if (targetModel) {
+        ui.setSelectedModel(targetModel);
+        
+        if (state.currentModel !== targetModel) {
+            await loadModel();
+        } else {
+            // Already loaded, just ensure UI state
+            ui.updateModelBadge(targetModel);
+            ui.elements.loadModelBtn.textContent = 'Loaded';
+            ui.elements.loadModelBtn.disabled = true;
+            ui.setInputEnabled(true);
+        }
     }
 
     // Collapse sidebar on mobile
@@ -184,6 +229,19 @@ function setupModelCallbacks() {
         ui.setStatus('ready', `Model ready (${device || 'wasm'})`);
         ui.setInputEnabled(true);
         ui.setModelSelectEnabled(true);
+        
+        // Update primary load button if this is the selected model
+        if (modelId === ui.getSelectedModel()) {
+            ui.elements.loadModelBtn.textContent = 'Loaded';
+            ui.elements.loadModelBtn.disabled = true;
+        }
+
+        // Update compare load button if this is the selected compare model
+        if (modelId === ui.elements.modelSelectCompare.value) {
+            ui.elements.loadModelCompareBtn.textContent = 'Loaded';
+            ui.elements.loadModelCompareBtn.disabled = true;
+        }
+
         ui.showToast('Model loaded successfully!', 'success');
     };
 
@@ -235,6 +293,7 @@ async function loadCompareModel() {
         state.compareModel = modelId;
         ui.showToast('Comparison model loaded!', 'success');
         ui.elements.loadModelCompareBtn.textContent = 'Loaded';
+        ui.elements.modelSelectCompare.disabled = false; // Re-enable selection
     } catch (error) {
         console.error('Failed to load comparison model:', error);
         ui.elements.loadModelCompareBtn.disabled = false;
@@ -247,6 +306,11 @@ async function toggleCompareMode() {
     const enabled = !state.settings.compareMode;
     await updateSetting('compareMode', enabled);
     ui.toggleCompareMode(enabled);
+    
+    // Update current conversation if active
+    if (state.currentConversationId) {
+        await store.updateConversation(state.currentConversationId, { compareMode: enabled });
+    }
 }
 
 // ============================================
@@ -265,6 +329,28 @@ async function sendMessage() {
     // Create conversation if needed
     if (!state.currentConversationId) {
         await createNewConversation();
+    }
+
+    // Update conversation model if not set or different
+    if (state.currentConversationId) {
+        const conversation = await store.getConversation(state.currentConversationId);
+        const updates = {};
+        
+        if (conversation.model !== state.currentModel) {
+            updates.model = state.currentModel;
+        }
+        
+        // Save compare state
+        if (state.settings.compareMode) {
+            if (conversation.compareMode !== true) updates.compareMode = true;
+            if (conversation.compareModel !== state.compareModel) updates.compareModel = state.compareModel;
+        } else {
+            if (conversation.compareMode !== false) updates.compareMode = false;
+        }
+
+        if (Object.keys(updates).length > 0) {
+            await store.updateConversation(state.currentConversationId, updates);
+        }
     }
 
     // Save and display user message
@@ -291,6 +377,9 @@ async function sendMessage() {
         ui.setChatTitle(title);
         await loadConversations();
     }
+
+    // Hide regenerate button while generating
+    ui.setRegenerateEnabled(false);
 
     // Generate response
     await generateResponse();
@@ -336,24 +425,121 @@ async function generateResponse() {
         state.isGenerating = false;
         ui.setGenerating(false);
         ui.focusInput();
+        
+        // Show regenerate button if we have messages
+        const msgs = await store.getMessages(state.currentConversationId);
+        if (msgs.length > 0) {
+            ui.setRegenerateEnabled(true);
+        }
     }
+}
+
+async function regenerateResponse() {
+    if (state.isGenerating || !state.currentConversationId) return;
+
+    // Get all messages
+    const messages = await store.getMessages(state.currentConversationId);
+    if (messages.length === 0) return;
+
+    // Find the last user message
+    let lastUserIndex = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'user') {
+            lastUserIndex = i;
+            break;
+        }
+    }
+
+    if (lastUserIndex === -1) {
+        ui.showToast('No user message to regenerate from', 'warning');
+        return;
+    }
+
+    // Delete all messages after the last user message
+    const messagesToDelete = messages.slice(lastUserIndex + 1);
+    for (const msg of messagesToDelete) {
+        await store.deleteMessage(msg.id);
+    }
+
+    // Refresh UI
+    const updatedMessages = await store.getMessages(state.currentConversationId);
+    ui.renderMessages(updatedMessages);
+
+    // Trigger generation
+    await generateResponse();
+}
+
+async function handleEditMessage(messageId, newContent) {
+    if (state.isGenerating) return;
+
+    // Get all messages
+    const messages = await store.getMessages(state.currentConversationId);
+    const messageIndex = messages.findIndex(m => m.id === messageId);
+
+    if (messageIndex === -1) {
+        ui.showToast('Message not found', 'error');
+        return;
+    }
+
+    // Update the message content
+    await store.updateMessage(messageId, { content: newContent });
+
+    // Delete all subsequent messages
+    const messagesToDelete = messages.slice(messageIndex + 1);
+    for (const msg of messagesToDelete) {
+        await store.deleteMessage(msg.id);
+    }
+
+    // Refresh UI
+    const updatedMessages = await store.getMessages(state.currentConversationId);
+    ui.renderMessages(updatedMessages);
+
+    // Trigger generation
+    await generateResponse();
 }
 
 async function generateSingleResponse(modelId, streamingId, chatHistory) {
     let fullResponse = '';
+    let timeoutId = null;
+    let timedOut = false;
+    let repetitionDetected = false;
+    const TIMEOUT_MS = 45000; // 45 seconds timeout
+
+    const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            console.warn(`Generation timed out for ${modelId}`);
+            timedOut = true;
+            modelManager.abort(modelId);
+        }, TIMEOUT_MS);
+    };
     
     try {
+        resetTimeout();
+
         await modelManager.generate(modelId, chatHistory, {
             temperature: state.settings.temperature,
             maxTokens: state.settings.maxTokens,
             systemPrompt: state.settings.systemPrompt,
 
             onToken: (token, accumulated) => {
+                resetTimeout();
                 fullResponse = accumulated;
+                
+                // Check for repetition
+                if (isRepetitive(accumulated)) {
+                    repetitionDetected = true;
+                    if (timeoutId) clearTimeout(timeoutId);
+                    modelManager.abort(modelId);
+                    return;
+                }
+                
                 ui.updateStreamingMessage(streamingId, accumulated);
             },
 
             onComplete: async (content, model) => {
+                if (timeoutId) clearTimeout(timeoutId);
+
                 // Save assistant message
                 const msgId = await store.addMessage(
                     state.currentConversationId,
@@ -365,9 +551,39 @@ async function generateSingleResponse(modelId, streamingId, chatHistory) {
                 ui.finalizeStreamingMessage(streamingId, content, msgId);
             }
         });
+
+        if (timedOut) {
+            throw new Error('Generation timed out - model stopped responding');
+        }
+
+        if (repetitionDetected) {
+            throw new Error('Generation stopped due to repetitive output');
+        }
+
     } catch (error) {
-        ui.removeStreamingMessage(streamingId);
-        ui.showToast(`Generation error (${modelId}): ${error.message}`, 'error');
+        if (timeoutId) clearTimeout(timeoutId);
+        console.error(`Generation error (${modelId}):`, error);
+        
+        ui.updateMessageError(streamingId, error.message || 'Generation failed', async () => {
+            // Retry logic
+            if (state.isGenerating) return;
+            
+            state.isGenerating = true;
+            ui.setGenerating(true);
+            
+            try {
+                await generateSingleResponse(modelId, streamingId, chatHistory);
+            } finally {
+                state.isGenerating = false;
+                ui.setGenerating(false);
+                
+                // Re-enable regenerate button if needed
+                const msgs = await store.getMessages(state.currentConversationId);
+                if (msgs.length > 0) {
+                    ui.setRegenerateEnabled(true);
+                }
+            }
+        });
     }
 }
 
@@ -524,7 +740,16 @@ function setupEventListeners() {
 
     // Model loading
     ui.elements.modelSelect.addEventListener('change', () => {
-        ui.elements.loadModelBtn.disabled = !ui.elements.modelSelect.value;
+        const selectedId = ui.elements.modelSelect.value;
+        const isCurrent = selectedId === state.currentModel;
+        
+        if (isCurrent && state.currentModel) {
+             ui.elements.loadModelBtn.textContent = 'Loaded';
+             ui.elements.loadModelBtn.disabled = true;
+        } else {
+             ui.elements.loadModelBtn.textContent = 'Load';
+             ui.elements.loadModelBtn.disabled = !selectedId;
+        }
     });
 
     ui.elements.loadModelBtn.addEventListener('click', loadModel);
@@ -533,7 +758,16 @@ function setupEventListeners() {
     ui.elements.compareToggle.addEventListener('click', toggleCompareMode);
     
     ui.elements.modelSelectCompare.addEventListener('change', () => {
-        ui.elements.loadModelCompareBtn.disabled = !ui.elements.modelSelectCompare.value;
+        const selectedId = ui.elements.modelSelectCompare.value;
+        const isCurrent = selectedId === state.compareModel;
+
+        if (isCurrent && state.compareModel) {
+            ui.elements.loadModelCompareBtn.textContent = 'Loaded';
+            ui.elements.loadModelCompareBtn.disabled = true;
+        } else {
+            ui.elements.loadModelCompareBtn.textContent = 'Load';
+            ui.elements.loadModelCompareBtn.disabled = !selectedId;
+        }
     });
     
     ui.elements.loadModelCompareBtn.addEventListener('click', loadCompareModel);
@@ -548,6 +782,7 @@ function setupEventListeners() {
 
     ui.elements.sendBtn.addEventListener('click', sendMessage);
     ui.elements.stopBtn.addEventListener('click', stopGeneration);
+    ui.elements.regenerateBtn.addEventListener('click', regenerateResponse);
 
     // Scroll
     ui.elements.messagesContainer.addEventListener('scroll', debounce(ui.updateScrollButton, 100));
@@ -610,6 +845,14 @@ function setupEventListeners() {
     ui.elements.exportJsonBtn.addEventListener('click', () => handleExport('json'));
     ui.elements.exportMdBtn.addEventListener('click', () => handleExport('md'));
 
+    // Shortcuts modal
+    ui.elements.closeShortcutsBtn.addEventListener('click', ui.closeShortcutsModal);
+    ui.elements.shortcutsModal.addEventListener('click', (e) => {
+        if (e.target === ui.elements.shortcutsModal) {
+            ui.closeShortcutsModal();
+        }
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Escape to close modals
@@ -618,13 +861,21 @@ function setupEventListeners() {
                 ui.closeSettings();
             } else if (ui.elements.exportModal.open) {
                 ui.closeExportModal();
+            } else if (ui.elements.shortcutsModal.open) {
+                ui.closeShortcutsModal();
             }
         }
 
-        // Ctrl/Cmd + N for new chat
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        // Alt + N for new chat
+        if (e.altKey && e.key === 'n') {
             e.preventDefault();
             createNewConversation();
+        }
+
+        // ? for shortcuts (Shift + /)
+        if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            e.preventDefault();
+            ui.openShortcutsModal();
         }
     });
 

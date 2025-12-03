@@ -17,6 +17,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css?v=7">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
 
     <!-- Import Map for ES Modules -->
     <script type="importmap">
@@ -24,7 +25,8 @@
         "imports": {
             "@huggingface/transformers": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.0/dist/transformers.min.js",
             "dexie": "https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.mjs",
-            "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.esm.js"
+            "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.esm.js",
+            "highlight.js": "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js"
         }
     }
     </script>
@@ -85,20 +87,20 @@
                     <span id="model-badge" class="badge badge--model">No model loaded</span>
                 </div>
                 <div class="chat__actions">
-                    <button id="compare-toggle" class="btn btn--ghost" title="Toggle comparison mode">
+                    <button id="compare-toggle" class="btn btn--ghost" title="Toggle comparison mode" aria-label="Toggle comparison mode">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="7" height="18" rx="1"></rect>
                             <rect x="14" y="3" width="7" height="18" rx="1"></rect>
                         </svg>
                     </button>
-                    <button id="export-btn" class="btn btn--ghost" title="Export conversation">
+                    <button id="export-btn" class="btn btn--ghost" title="Export conversation" aria-label="Export conversation">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
                     </button>
-                    <button id="theme-toggle" class="btn btn--ghost" title="Toggle theme">
+                    <button id="theme-toggle" class="btn btn--ghost" title="Toggle theme" aria-label="Toggle theme">
                         <svg class="icon icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <circle cx="12" cy="12" r="5"></circle>
@@ -204,7 +206,7 @@
                 <!-- Message Input -->
                 <div class="input-group">
                     <textarea id="chat-input" class="input-group__textarea"
-                        placeholder="Type your message... (Ctrl+Enter to send)" rows="1" disabled></textarea>
+                        placeholder="Type your message... (Ctrl+Enter to send)" rows="1" disabled aria-label="Message input"></textarea>
                     <button id="send-btn" class="btn btn--primary btn--icon" disabled aria-label="Send message">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -214,6 +216,13 @@
                     <button id="stop-btn" class="btn btn--danger btn--icon hidden" aria-label="Stop generation">
                         <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
                             <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                        </svg>
+                    </button>
+                    <button id="regenerate-btn" class="btn btn--ghost btn--icon hidden" aria-label="Regenerate response" title="Regenerate response">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                         </svg>
                     </button>
                 </div>
@@ -331,6 +340,41 @@
                         </svg>
                         Export as Markdown
                     </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Shortcuts Modal -->
+    <dialog id="shortcuts-modal" class="modal">
+        <div class="modal__content modal__content--sm">
+            <header class="modal__header">
+                <h2>Keyboard Shortcuts</h2>
+                <button id="close-shortcuts-btn" class="btn btn--ghost btn--icon" aria-label="Close">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal__body">
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Send Message</span>
+                        <div><kbd class="shortcut-key">Ctrl</kbd> + <kbd class="shortcut-key">Enter</kbd></div>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">New Chat</span>
+                        <div><kbd class="shortcut-key">Alt</kbd> + <kbd class="shortcut-key">N</kbd></div>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Close Modal</span>
+                        <kbd class="shortcut-key">Esc</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Show Shortcuts</span>
+                        <kbd class="shortcut-key">?</kbd>
+                    </div>
                 </div>
             </div>
         </div>

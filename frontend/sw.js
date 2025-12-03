@@ -3,7 +3,7 @@
  * Caches app shell and model files for offline use
  */
 
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `local-ai-chat-${CACHE_VERSION}`;
 
 // App shell files to cache immediately
@@ -25,7 +25,9 @@ const APP_SHELL = [
 const CDN_RESOURCES = [
     'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.0/dist/transformers.min.js',
     'https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.mjs',
-    'https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.esm.js'
+    'https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.esm.js',
+    'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js',
+    'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css'
 ];
 
 // ============================================

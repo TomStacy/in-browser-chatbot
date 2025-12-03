@@ -5,6 +5,7 @@
 A **fully offline-capable AI chatbot** that runs entirely in the browser after initial download. Showcases modern web capabilities (WebGPU, Service Workers, IndexedDB) combined with on-device ML inference using transformers.js.
 
 **Key Features:**
+
 - 100% private - all inference runs locally
 - Works offline after first load
 - Multiple model support with side-by-side comparison (planned)
@@ -15,7 +16,7 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Browser                                   │
 ├─────────────────────────────────────────────────────────────────┤
@@ -79,7 +80,7 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 
 ## File Structure
 
-```
+```text
 in-browser-chatbot/
 ├── frontend/
 │   ├── index.html              # Main app shell
@@ -133,6 +134,7 @@ const worker = new Worker(url, { type: 'module' });
 ```
 
 This approach:
+
 - Avoids file path issues
 - Works with dynamic imports from CDN
 - Keeps worker code colocated with manager
@@ -153,6 +155,7 @@ The app uses native ES modules with import maps:
 ```
 
 Benefits:
+
 - No bundler configuration
 - Instant development refresh
 - Simpler caching strategy
@@ -172,6 +175,7 @@ Benefits:
 ## Data Models
 
 ### Conversation
+
 ```javascript
 {
   id: number,              // Auto-increment
@@ -185,6 +189,7 @@ Benefits:
 ```
 
 ### Message
+
 ```javascript
 {
   id: number,              // Auto-increment
@@ -197,6 +202,7 @@ Benefits:
 ```
 
 ### Settings
+
 ```javascript
 {
   theme: 'dark' | 'light' | 'system',
@@ -254,7 +260,7 @@ Benefits:
 
 ## Default System Prompt
 
-```
+```text
 You are a helpful, harmless, and honest AI assistant running entirely in the user's browser. You provide clear, accurate, and thoughtful responses. You can help with a wide variety of tasks including answering questions, writing, coding, analysis, and creative projects. Be concise but thorough.
 ```
 
@@ -263,16 +269,19 @@ You are a helpful, harmless, and honest AI assistant running entirely in the use
 ## Browser Requirements
 
 ### Required
+
 - ES2022+ support (async/await, optional chaining)
 - ES Modules support
 - IndexedDB support
 - Web Workers support
 
 ### Recommended (for best performance)
+
 - WebGPU support (Chrome 113+, Edge 113+)
 - Service Worker support
 
 ### WebGPU Browser Support (2024)
+
 | Browser | Status |
 |---------|--------|
 | Chrome 113+ (desktop) | ✅ Full support |
@@ -322,20 +331,23 @@ You are a helpful, harmless, and honest AI assistant running entirely in the use
 ## Future Architecture Considerations
 
 ### Multi-Model Comparison
+
 - Spawn separate worker per model
 - Parallel generation with independent streams
 - Merge results in UI layer
 
 ### RAG Support (Future)
+
 - Local vector store (likely in IndexedDB)
 - Embedding model in separate worker
 - Document chunking in main thread
 
 ### Voice Input (Future)
+
 - Web Speech API for recognition
 - Audio context for voice activity detection
 - Stream transcription to chat input
 
 ---
 
-*Last Updated: December 2024*
+**Last Updated:** December 2024

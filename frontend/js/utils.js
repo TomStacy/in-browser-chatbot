@@ -241,6 +241,45 @@ export function getModelDisplayName(modelId) {
 }
 
 /**
+ * Check for repetitive patterns in text
+ * @param {string} text - Text to check
+ * @returns {boolean} - True if repetition detected
+ */
+export function isRepetitive(text) {
+    const maxPatternLen = 50;
+    const minPatternLen = 1;
+
+    for (let len = minPatternLen; len <= maxPatternLen; len++) {
+        // Dynamic threshold: higher for short patterns to allow for separators/formatting
+        // Short patterns (1-3 chars) need ~25 repetitions (e.g. "-------------------------")
+        // Longer patterns need fewer repetitions (e.g. "repetition repetition repetition ...")
+        const threshold = len < 4 ? 25 : 6;
+        
+        const totalLen = len * threshold;
+        if (text.length < totalLen) continue;
+
+        const suffix = text.slice(-totalLen);
+        const pattern = suffix.slice(0, len);
+        
+        // Ignore whitespace-only patterns
+        if (pattern.trim().length === 0) continue;
+
+        let isPattern = true;
+        for (let i = 0; i < threshold; i++) {
+            if (suffix.slice(i * len, (i + 1) * len) !== pattern) {
+                isPattern = false;
+                break;
+            }
+        }
+        
+        if (isPattern) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Default system prompt
  */
 export const DEFAULT_SYSTEM_PROMPT = `You are a helpful, harmless, and honest AI assistant running entirely in the user's browser. You provide clear, accurate, and thoughtful responses. You can help with a wide variety of tasks including answering questions, writing, coding, analysis, and creative projects. Be concise but thorough.`;
@@ -250,15 +289,27 @@ export const DEFAULT_SYSTEM_PROMPT = `You are a helpful, harmless, and honest AI
  */
 export const SUPPORTED_MODELS = [
     {
-        id: 'onnx-community/Qwen2.5-0.5B-Instruct',
-        name: 'Qwen 2.5 0.5B (Instruct)',
-        description: 'Lite model, faster download (~400MB)',
-        size: '400MB'
+        id: 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
+        name: 'SmolLM2-1.7B-Instruct',
+        description: 'Balanced performance (~1.7GB)',
+        size: '1.7GB'
     },
     {
-        id: 'Xenova/Phi-3-mini-4k-instruct_q4',
-        name: 'Phi-3 Mini 4K',
-        description: 'Full capability model (~1.5GB)',
+        id: 'onnx-community/granite-3.0-2b-instruct',
+        name: 'granite-3.0-2b-instruct',
+        description: 'High quality instruction following (~2GB)',
+        size: '2GB'
+    },
+    {
+        id: 'onnx-community/Qwen2.5-1.5B-Instruct',
+        name: 'Qwen 2.5 1.5B (Instruct)',
+        description: 'Fast and capable (~1.5GB)',
         size: '1.5GB'
+    },
+    {
+        id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web',
+        name: 'Phi-3.5-mini-instruct-onnx-web',
+        description: 'Best reasoning capabilities (~2.2GB)',
+        size: '2.2GB'
     }
 ];

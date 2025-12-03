@@ -15,7 +15,7 @@ Building a **fully offline-capable AI chatbot** that runs entirely in the browse
 | Phase 1 | ✅ Complete | Core Infrastructure |
 | Phase 2 | ✅ Complete | Chat Persistence |
 | Phase 3 | ✅ Complete | Multi-Model Support |
-| Phase 4 | 🔲 Not Started | Polish & UX |
+| Phase 4 | ✅ Complete | Polish & UX |
 | Phase 5 | 🔲 Not Started | PWA & Final Polish |
 
 ---
@@ -24,7 +24,7 @@ Building a **fully offline-capable AI chatbot** that runs entirely in the browse
 
 **Goal:** Basic working chat with model inference
 
-### Completed Tasks
+### Phase 1 Tasks
 
 - [x] Project structure setup
 - [x] HTML shell with full UI layout
@@ -41,16 +41,18 @@ Building a **fully offline-capable AI chatbot** that runs entirely in the browse
 - [x] Toast notifications
 - [x] PWA manifest and icons
 
-### Technical Notes
+### Phase 1 Technical Notes
 
 - **Worker Loading Issue Solved:** Module workers with dynamic imports from CDN fail silently. Solution: Embed worker code as string in `model-manager.js` and create via Blob URL.
 - **Supported Models:**
-  - `onnx-community/Qwen2.5-0.5B-Instruct` (~400MB, lite)
-  - `Xenova/Phi-3-mini-4k-instruct_q4` (~1.5GB, full)
+  - `HuggingFaceTB/SmolLM2-1.7B-Instruct` (~1.7GB)
+  - `onnx-community/granite-3.0-2b-instruct` (~2GB)
+  - `onnx-community/Qwen2.5-1.5B-Instruct` (~1.5GB)
+  - `onnx-community/Phi-3.5-mini-instruct-onnx-web` (~2.2GB)
 
-### Files Created
+### Phase 1 Files Created
 
-```
+```text
 frontend/
 ├── index.html              ✅
 ├── manifest.json           ✅
@@ -78,7 +80,7 @@ frontend/
 
 **Goal:** Conversations persist across sessions
 
-### Tasks
+### Phase 2 Tasks
 
 - [x] Load conversation list on startup
 - [x] Save messages to IndexedDB after each exchange
@@ -90,7 +92,7 @@ frontend/
 - [x] Persist selected model per conversation
 - [x] Handle empty state (no conversations)
 
-### Implementation Notes
+### Phase 2 Implementation Notes
 
 - Conversation CRUD already implemented in `chat-store.js`
 - Need to wire up UI events to storage functions
@@ -102,7 +104,7 @@ frontend/
 
 **Goal:** Multiple models with side-by-side comparison
 
-### Tasks
+### Phase 3 Tasks
 
 - [x] Model download status indicators (per model)
 - [x] Allow loading multiple models simultaneously
@@ -114,7 +116,7 @@ frontend/
 - [x] Persist comparison mode setting
 - [x] Cache status display per model
 
-### Implementation Notes
+### Phase 3 Implementation Notes
 
 - `modelManager` already supports multiple workers
 - Need UI for comparison view (CSS grid split)
@@ -122,26 +124,26 @@ frontend/
 
 ---
 
-## Phase 4: Polish & UX 🔲 NOT STARTED
+## Phase 4: Polish & UX ✅ COMPLETE
 
 **Goal:** Production-quality experience
 
-### Tasks
+### Phase 4 Tasks
 
-- [ ] Markdown rendering improvements (code highlighting)
-- [ ] Copy message button
-- [ ] Copy code block button
-- [ ] Regenerate response button
-- [ ] Edit user message
-- [ ] Keyboard shortcuts help modal
-- [ ] Loading skeleton for messages
-- [ ] Better error messages with retry
-- [ ] Smooth animations for message appearance
-- [ ] System theme detection and auto-switch
-- [ ] Mobile touch improvements
-- [ ] Accessibility audit (ARIA labels, focus management)
+- [x] Markdown rendering improvements (code highlighting)
+- [x] Copy message button
+- [x] Copy code block button
+- [x] Regenerate response button
+- [x] Edit user message
+- [x] Keyboard shortcuts help modal
+- [x] Smooth animations for message appearance
+- [x] System theme detection and auto-switch
+- [x] Better error messages with retry
+- [x] Mobile touch improvements
+- [x] Accessibility audit (ARIA labels, focus management)
+- [~] Loading skeleton for messages (Skipped - fast local load)
 
-### Implementation Notes
+### Phase 4 Implementation Notes
 
 - Consider adding Prism.js or highlight.js for code
 - Use `prefers-color-scheme` media query for system theme
@@ -152,7 +154,7 @@ frontend/
 
 **Goal:** Installable, offline-first PWA
 
-### Tasks
+### Phase 5 Tasks
 
 - [ ] PWA install prompt handling
 - [ ] "Add to Home Screen" button
@@ -165,7 +167,7 @@ frontend/
 - [ ] Final testing on mobile devices
 - [ ] README.md for repository
 
-### Implementation Notes
+### Phase 5 Implementation Notes
 
 - Service Worker already handles caching
 - Need `beforeinstallprompt` event handler
@@ -237,4 +239,4 @@ npx serve .
 
 ---
 
-*Last Updated: December 2024*
+**Last Updated:** December 2024
