@@ -3,7 +3,7 @@
  * Caches app shell and model files for offline use
  */
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `local-ai-chat-${CACHE_VERSION}`;
 
 // App shell files to cache immediately
@@ -137,7 +137,7 @@ self.addEventListener('fetch', (event) => {
  * Try cache, fall back to network, update cache
  */
 async function cacheFirst(request) {
-    const cached = await caches.match(request);
+    const cached = await caches.match(request, { ignoreSearch: true });
     if (cached) {
         return cached;
     }
@@ -181,7 +181,7 @@ async function networkFirst(request) {
 
         return response;
     } catch (error) {
-        const cached = await caches.match(request);
+        const cached = await caches.match(request, { ignoreSearch: true });
         if (cached) {
             return cached;
         }

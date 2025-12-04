@@ -13,7 +13,7 @@ import {
     debounce,
     isWebGPUSupported,
     isRepetitive
-} from './utils.js?v=7';
+} from './utils.js?v=8';
 
 // ============================================
 // Application State
