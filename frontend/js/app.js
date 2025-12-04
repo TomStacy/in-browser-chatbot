@@ -872,9 +872,18 @@ function setupEventListeners() {
 
     // Chat input
     ui.elements.chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            sendMessage();
+        if (e.key === 'Enter') {
+            if (state.settings.enterToSend) {
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            } else {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
         }
     });
 
@@ -926,6 +935,10 @@ function setupEventListeners() {
 
     ui.elements.systemPrompt.addEventListener('change', (e) => {
         handleSystemPromptChange(e.target.value);
+    });
+
+    ui.elements.enterToSendCheckbox.addEventListener('change', (e) => {
+        updateSetting('enterToSend', e.target.checked);
     });
 
     ui.elements.resetPromptBtn.addEventListener('click', resetSystemPrompt);

@@ -202,7 +202,8 @@ export async function initializeSettings() {
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         defaultModel: null,
         compareMode: false,
-        sidebarCollapsed: false
+        sidebarCollapsed: false,
+        enterToSend: true
     };
     
     const existing = await getAllSettings();

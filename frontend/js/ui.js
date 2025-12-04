@@ -99,6 +99,7 @@ export const elements = {
     tokensValue: document.getElementById('tokens-value'),
     systemPrompt: document.getElementById('system-prompt'),
     resetPromptBtn: document.getElementById('reset-prompt-btn'),
+    enterToSendCheckbox: document.getElementById('enter-to-send-checkbox'),
     clearCacheBtn: document.getElementById('clear-cache-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
     
@@ -661,6 +662,7 @@ export function updateSettingsUI(settings) {
     elements.maxTokensSlider.value = settings.maxTokens ?? 512;
     elements.tokensValue.textContent = settings.maxTokens ?? 512;
     elements.systemPrompt.value = settings.systemPrompt || '';
+    elements.enterToSendCheckbox.checked = settings.enterToSend ?? true;
     
     // Update version
     if (elements.appVersion) {
