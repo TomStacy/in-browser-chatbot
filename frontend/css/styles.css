@@ -991,7 +991,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.1);
     color: var(--color-text);
     border: none;
     opacity: 0;
