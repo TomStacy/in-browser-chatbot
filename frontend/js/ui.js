@@ -135,18 +135,24 @@ export function getEffectiveTheme() {
 // Sidebar
 // ============================================
 
-export function toggleSidebar(collapsed) {
-    // Desktop behavior
-    elements.sidebar.classList.toggle('collapsed', collapsed);
+export function toggleSidebar(shouldHide) {
+    const isSmallScreen = window.innerWidth <= 768;
     
-    // Mobile behavior
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-        // On mobile, "collapsed" means hidden (default), so !collapsed means open
-        // But we are using a specific class 'mobile-open' for clarity
-        const isOpen = !collapsed;
-        elements.sidebar.classList.toggle('mobile-open', isOpen);
-        elements.sidebarBackdrop.classList.toggle('visible', isOpen);
+    if (isSmallScreen) {
+        // Mobile: shouldHide=true -> remove mobile-open
+        // If shouldHide is undefined, toggle current state
+        const isCurrentlyOpen = elements.sidebar.classList.contains('mobile-open');
+        const show = shouldHide !== undefined ? !shouldHide : !isCurrentlyOpen;
+        
+        elements.sidebar.classList.toggle('mobile-open', show);
+        elements.sidebarBackdrop.classList.toggle('visible', show);
+    } else {
+        // Desktop: shouldHide=true -> add collapsed
+        // If shouldHide is undefined, toggle current state
+        const isCurrentlyCollapsed = elements.sidebar.classList.contains('collapsed');
+        const collapse = shouldHide !== undefined ? shouldHide : !isCurrentlyCollapsed;
+        
+        elements.sidebar.classList.toggle('collapsed', collapse);
     }
 }
 

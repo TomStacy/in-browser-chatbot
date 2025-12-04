@@ -3,7 +3,7 @@
  * Caches app shell and model files for offline use
  */
 
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v17';
 const CACHE_NAME = `local-ai-chat-${CACHE_VERSION}`;
 
 // App shell files to cache immediately

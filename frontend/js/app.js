@@ -52,10 +52,7 @@ async function init() {
     ui.updateSettingsUI(state.settings);
 
     // Apply sidebar state
-    if (state.settings.sidebarCollapsed) {
-        ui.toggleSidebar(true);
-    } else if (window.innerWidth <= 768) {
-        // Force collapse on mobile init if not already set
+    if (window.innerWidth <= 768) {
         ui.toggleSidebar(true);
     }
 
@@ -800,13 +797,12 @@ function setupEventListeners() {
     ui.elements.sidebarToggle.addEventListener('click', () => {
         const collapsed = !ui.isSidebarCollapsed();
         ui.toggleSidebar(collapsed);
-        updateSetting('sidebarCollapsed', collapsed);
     });
 
     // Close sidebar when clicking backdrop (mobile)
     ui.elements.sidebarBackdrop.addEventListener('click', () => {
         ui.toggleSidebar(true); // Collapse
-        updateSetting('sidebarCollapsed', true);
+        // Don't save setting for mobile backdrop click
     });
 
     ui.elements.newChatBtn.addEventListener('click', () => {
@@ -996,6 +992,26 @@ function setupEventListeners() {
             ui.setTheme('system');
         }
     });
+
+    // Handle resize events to clean up sidebar state
+    window.addEventListener('resize', debounce(() => {
+        const isSmallScreen = window.innerWidth <= 768;
+
+        if (isSmallScreen) {
+            // Small screen mode
+            // Always start with sidebar closed when entering small screen
+            ui.elements.sidebar.classList.remove('mobile-open');
+            ui.elements.sidebarBackdrop.classList.remove('visible');
+        } else {
+            // Large screen mode
+            // Remove mobile specific classes
+            ui.elements.sidebar.classList.remove('mobile-open');
+            ui.elements.sidebarBackdrop.classList.remove('visible');
+            
+            // Ensure sidebar is expanded on desktop (default state)
+            ui.elements.sidebar.classList.remove('collapsed');
+        }
+    }, 100));
 
     // Online/offline status
     window.addEventListener('online', () => {

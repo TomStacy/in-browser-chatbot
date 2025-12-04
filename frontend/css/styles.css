@@ -151,6 +151,7 @@ body {
     flex-shrink: 0;
     transition: transform var(--transition-normal), width var(--transition-normal);
     z-index: var(--z-sidebar);
+    overflow: hidden;
 }
 
 .sidebar.collapsed {
@@ -1338,19 +1339,21 @@ body {
    ============================================ */
 
 @media (max-width: 768px) {
-    .sidebar {
+    .sidebar,
+    .sidebar.collapsed {
         position: fixed;
         left: 0;
         top: 0;
         height: 100%;
         transform: translateX(-100%);
         box-shadow: var(--shadow-xl);
+        width: var(--sidebar-width) !important;
     }
     
     .sidebar.mobile-open {
         transform: translateX(0);
     }
-    
+
     .sidebar-toggle {
         display: flex;
     }
@@ -1387,6 +1390,51 @@ body {
     
     .toast {
         width: 100%;
+    }
+
+    /* Hide header actions on mobile */
+    #compare-toggle,
+    #export-btn {
+        display: none !important;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 600px) {
+    .chat__header {
+        padding-left: 4rem;
+        padding-right: 0.75rem;
+    }
+
+    .chat__title {
+        overflow: hidden;
+    }
+
+    .chat__title h1 {
+        font-size: 1rem;
+    }
+
+    /* Hide badge on very small screens to prevent overlap */
+    .chat__title .badge {
+        display: none !important;
+    }
+
+    .chat__actions {
+        gap: 0.25rem;
+    }
+
+    .chat__actions .btn {
+        padding: 0.5rem;
+    }
+
+    .model-selector .select {
+        font-size: 0.8125rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .model-selector .btn {
+        padding: 0.5rem 0.75rem;
     }
 }
 
