@@ -992,6 +992,7 @@ body {
     justify-content: center;
     padding: 1rem;
     background: rgba(0, 0, 0, 0.5);
+    color: var(--color-text);
     opacity: 0;
     visibility: hidden;
     transition: opacity var(--transition-normal), visibility var(--transition-normal);
@@ -1011,6 +1012,7 @@ body {
     max-width: 500px;
     max-height: 90vh;
     background: var(--color-bg);
+    color: var(--color-text);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     overflow: hidden;
