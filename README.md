@@ -86,6 +86,20 @@ This project uses ESLint for code quality. To run the linter:
    npm run lint
    ```
 
+### Testing
+
+This project uses Vitest for unit testing. To run the tests:
+
+```bash
+npm test
+```
+
+To run tests once (without watch mode):
+
+```bash
+npm test -- run
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
