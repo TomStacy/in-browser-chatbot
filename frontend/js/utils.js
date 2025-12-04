@@ -112,10 +112,13 @@ export function escapeHtml(str) {
  * @returns {string}
  */
 export function sanitizeFilename(name) {
-    return name
+    const sanitized = name
         .replace(/[^a-z0-9\s-]/gi, '')
+        .trim()
         .replace(/\s+/g, '_')
-        .substring(0, 50) || 'conversation';
+        .substring(0, 50);
+    
+    return sanitized || 'conversation';
 }
 
 /**
@@ -169,7 +172,7 @@ export function generateTitle(content, maxLength = 50) {
     // Remove markdown, code blocks, etc.
     const cleaned = content
         .replace(/```[\s\S]*?```/g, '')
-        .replace(/`[^`]+`/g, '')
+        .replace(/`/g, '')
         .replace(/[#*_~\[\]()]/g, '')
         .replace(/\n+/g, ' ')
         .trim();
