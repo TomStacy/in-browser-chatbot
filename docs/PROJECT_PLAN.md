@@ -170,6 +170,7 @@ frontend/
 - Service Worker already handles caching
 - Need `beforeinstallprompt` event handler
 - Consider cache versioning strategy
+- **Mobile Optimization:** Sidebar state persistence removed for simpler UX. Compare/Export buttons hidden on mobile to save space.
 
 ---
 

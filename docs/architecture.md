@@ -211,7 +211,7 @@ Benefits:
   systemPrompt: string,
   defaultModel: string,
   compareMode: boolean,
-  sidebarCollapsed: boolean
+  enterToSend: boolean
 }
 ```
 
