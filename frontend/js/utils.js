@@ -309,12 +309,6 @@ export const SUPPORTED_MODELS = [
         size: '2GB'
     },
     {
-        id: 'onnx-community/Qwen2.5-1.5B-Instruct',
-        name: 'Qwen 2.5 1.5B (Instruct)',
-        description: 'Fast and capable (~1.5GB)',
-        size: '1.5GB'
-    },
-    {
         id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web',
         name: 'Phi-3.5-mini-instruct-onnx-web',
         description: 'Best reasoning capabilities (~2.2GB)',

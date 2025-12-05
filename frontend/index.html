@@ -10,7 +10,7 @@
 
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn-lfs.huggingface.co https://*.huggingface.co; worker-src 'self' blob:;">
+          content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn-lfs.huggingface.co https://*.huggingface.co https://cdn.jsdelivr.net; worker-src 'self' blob:;">
 
     <title>Local AI Chat - 100% Private</title>
 
@@ -194,7 +194,6 @@
                             <option value="">-- Select a Model --</option>
                             <option value="HuggingFaceTB/SmolLM2-1.7B-Instruct">SmolLM2-1.7B-Instruct</option>
                             <option value="onnx-community/granite-3.0-2b-instruct">granite-3.0-2b-instruct</option>
-                            <option value="onnx-community/Qwen2.5-1.5B-Instruct">Qwen 2.5 1.5B (Instruct)</option>
                             <option value="onnx-community/Phi-3.5-mini-instruct-onnx-web">Phi-3.5-mini-instruct-onnx-web</option>
                         </select>
                         <button id="load-model-btn" class="btn btn--primary" disabled>
@@ -209,7 +208,6 @@
                             <option value="">-- Select Model 2 --</option>
                             <option value="HuggingFaceTB/SmolLM2-1.7B-Instruct">SmolLM2-1.7B-Instruct</option>
                             <option value="onnx-community/granite-3.0-2b-instruct">granite-3.0-2b-instruct</option>
-                            <option value="onnx-community/Qwen2.5-1.5B-Instruct">Qwen 2.5 1.5B (Instruct)</option>
                             <option value="onnx-community/Phi-3.5-mini-instruct-onnx-web">Phi-3.5-mini-instruct-onnx-web</option>
                         </select>
                         <button id="load-model-compare-btn" class="btn btn--primary" disabled>
