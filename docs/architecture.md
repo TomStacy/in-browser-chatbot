@@ -44,7 +44,7 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │                    Cache Storage                         │   │
-│  │  - ONNX model files (~1.5GB for Phi-3, ~400MB for Qwen) │   │
+│  │  - ONNX model files (~1.5GB for Phi-3)                   │   │
 │  │  - WASM runtime files                                    │   │
 │  │  - App shell (HTML, CSS, JS)                            │   │
 │  │  - CDN resources (transformers.js, Dexie, marked)       │   │
@@ -73,7 +73,6 @@ A **fully offline-capable AI chatbot** that runs entirely in the browser after i
 |-------|------|----------|
 | `HuggingFaceTB/SmolLM2-1.7B-Instruct` | ~1.7GB | Balanced performance |
 | `onnx-community/granite-3.0-2b-instruct` | ~2GB | High quality instruction following |
-| `onnx-community/Qwen2.5-1.5B-Instruct` | ~1.5GB | Fast and capable |
 | `onnx-community/Phi-3.5-mini-instruct-onnx-web` | ~2.2GB | Best reasoning capabilities |
 
 ---
