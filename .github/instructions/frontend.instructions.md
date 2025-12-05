@@ -20,7 +20,7 @@ Lightweight vanilla JavaScript application with zero framework dependencies. Use
 
 ## File Structure
 
-```
+```text
 frontend/
 ├── index.html              # Main app shell (single page)
 ├── manifest.json           # PWA manifest
@@ -47,6 +47,7 @@ frontend/
 ## Core Principles
 
 ### 1. No Build Step
+
 - Use native ES modules (`type="module"`)
 - Import external libraries via CDN with import maps
 - No bundling, transpilation, or minification required for development
@@ -67,6 +68,7 @@ frontend/
 ```
 
 ### 2. Modern JavaScript Patterns
+
 - Use ES modules for code organization
 - Prefer `const` and `let` over `var`
 - Use async/await for asynchronous operations
@@ -97,6 +99,7 @@ function renderMessage(message) {
 ```
 
 ### 3. DOM Manipulation
+
 - Cache DOM references at module level
 - Use `insertAdjacentHTML` for performance
 - Prefer event delegation on parent elements
@@ -129,6 +132,7 @@ export function appendMessage(message) {
 ```
 
 ### 4. State Management
+
 - Use a simple state object for UI state
 - Persist to IndexedDB for data that survives sessions
 - Use CustomEvents for cross-module communication
@@ -158,6 +162,7 @@ window.addEventListener('statechange', (e) => {
 ```
 
 ### 5. CSS Architecture
+
 - Use CSS custom properties for theming
 - BEM-like naming convention (block__element--modifier)
 - Mobile-first responsive design
@@ -221,6 +226,7 @@ window.addEventListener('statechange', (e) => {
 ## Web Worker Pattern
 
 ### Worker Setup (model-worker.js)
+
 ```javascript
 // js/model-worker.js
 import { pipeline, env, TextStreamer } from '@xenova/transformers';
@@ -290,6 +296,7 @@ async function generate({ messages, temperature, maxTokens }) {
 ```
 
 ### Main Thread Usage (model-manager.js)
+
 ```javascript
 // js/model-manager.js
 class ModelManager {
@@ -603,6 +610,7 @@ const conversations = await safeAsync(
 ## Testing
 
 Since there's no build step, test by:
+
 1. Opening in browser with DevTools
 2. Testing offline mode in DevTools > Network > Offline
 3. Lighthouse PWA audit
@@ -611,18 +619,21 @@ Since there's no build step, test by:
 ## Common Tasks
 
 ### Adding a New Setting
+
 1. Add to settings schema in `chat-store.js`
 2. Add UI control in settings panel (in `ui.js`)
 3. Wire up change handler in `app.js`
 4. Use setting value where needed
 
 ### Adding a New Model
+
 1. Add model ID to `SUPPORTED_MODELS` constant
 2. Add to model selector UI
 3. Test download and inference
 4. Update any model-specific prompt formatting
 
 ### Updating Cache Version
+
 1. Increment `CACHE_VERSION` in `sw.js`
 2. Update `APP_SHELL` array if files changed
 3. Test that old cache is properly cleaned up
