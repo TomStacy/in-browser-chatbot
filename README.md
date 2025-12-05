@@ -5,6 +5,8 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
 
+[**🔴 Live Demo**](https://local-ai-chat.tomstacy.com/)
+
 ## 🌟 Features
 
 - **100% Private:** All AI processing happens locally on your device using WebGPU.
