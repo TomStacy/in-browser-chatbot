@@ -234,7 +234,7 @@ class ModelManager {
 
             // Set up message handler
             worker.onmessage = (event) => {
-                this.handleWorkerMessage(modelId, event.data, resolve, reject);
+                this.handleWorkerMessage(modelId, event.data);
             };
 
             worker.onerror = (error) => {
@@ -267,18 +267,19 @@ class ModelManager {
     /**
      * Handle messages from workers
      */
-    handleWorkerMessage(modelId, data, resolve, reject) {
+    handleWorkerMessage(modelId, data) {
         const { type, ...payload } = data;
         const callbacks = this.callbacks.get(modelId) || {};
 
         switch (type) {
-            case 'worker-ready':
+            case 'worker-ready': {
                 console.log('[ModelManager] Worker ready, sending init for:', modelId);
                 const worker = this.workers.get(modelId);
                 if (worker) {
                     worker.postMessage({ type: 'init', model: modelId });
                 }
                 break;
+            }
 
             case 'status':
                 this.onStatusChange?.(modelId, payload.status, payload.message);
@@ -382,7 +383,7 @@ class ModelManager {
      * Abort all generations
      */
     abortAll() {
-        for (const [modelId, worker] of this.workers) {
+        for (const [, worker] of this.workers) {
             worker.postMessage({ type: 'abort' });
         }
     }

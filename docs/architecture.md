@@ -324,7 +324,7 @@ You are a helpful, harmless, and honest AI assistant running entirely in the use
 - **No tracking:** No analytics, telemetry, or external requests (except model download)
 - **User control:** Clear all data option in settings
 - **HTTPS required:** Service Workers require secure context
-- **CSP compatible:** No inline scripts, external resources from trusted CDNs only
+- **Content Security Policy (CSP):** Strict policy implemented to restrict scripts to trusted sources (self + jsdelivr) and connections to Hugging Face.
 
 ---
 

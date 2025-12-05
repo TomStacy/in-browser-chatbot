@@ -8,6 +8,10 @@
         content="100% private AI chatbot running entirely in your browser. No server, no data collection, works offline.">
     <meta name="theme-color" content="#1a1a1a">
 
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn-lfs.huggingface.co https://*.huggingface.co; worker-src 'self' blob:;">
+
     <title>Local AI Chat - 100% Private</title>
 
     <!-- PWA -->

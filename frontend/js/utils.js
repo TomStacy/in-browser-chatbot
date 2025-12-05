@@ -173,7 +173,7 @@ export function generateTitle(content, maxLength = 50) {
     const cleaned = content
         .replace(/```[\s\S]*?```/g, '')
         .replace(/`/g, '')
-        .replace(/[#*_~\[\]()]/g, '')
+        .replace(/[#*_~[\]()]/g, '')
         .replace(/\n+/g, ' ')
         .trim();
 

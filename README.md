@@ -15,6 +15,7 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
 - **Rich UI:** Dark/Light mode, markdown rendering, code highlighting, and more.
 - **PWA Ready:** Installable as a desktop or mobile app.
 - **Mobile Optimized:** Fully responsive design with touch-friendly interface.
+- **Secure:** Implements strict Content Security Policy (CSP) to prevent XSS and unauthorized connections.
 
 ## 🚀 Getting Started
 
