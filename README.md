@@ -32,18 +32,36 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
    git clone https://github.com/TomStacy/in-browser-chatbot.git
    ```
 
-2. Navigate to the frontend directory:
+2. Navigate to the project directory:
 
    ```bash
-   cd in-browser-chatbot/frontend
+   cd in-browser-chatbot
    ```
 
 3. Serve the application:
-   You can use any static file server. For example, with Python:
+   
+   **Option 1: Using the provided Python script (Recommended)**
+   
+   ```bash
+   python serve.py
+   ```
+   Then open `http://localhost:8001`.
+
+   **Option 2: Manual setup**
+
+   Navigate to the frontend directory:
+
+   ```bash
+   cd frontend
+   ```
+
+   Then run a static server (e.g., Python):
 
    ```bash
    python -m http.server 8080
    ```
+
+   Then open `http://localhost:8080`.
 
    Or with Node.js:
 
@@ -51,15 +69,12 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
    npx serve .
    ```
 
-4. Open your browser and go to `http://localhost:8080`.
-
 ## 🧠 Supported Models
 
 The application currently supports the following ONNX-optimized models:
 
 - **SmolLM2-1.7B-Instruct** (Balanced performance)
 - **Granite-3.0-2b-instruct** (High quality instruction following)
-- **Qwen 2.5 1.5B** (Fast and capable)
 - **Phi-3.5-mini-instruct** (Strong reasoning capabilities)
 
 ## 🛠️ Technology Stack
