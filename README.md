@@ -69,6 +69,14 @@ A fully offline-capable AI chatbot that runs entirely in your browser. No server
    npx serve .
    ```
 
+   **Option 3: VS Code Live Server**
+
+   If you use Visual Studio Code, you can use the [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer).
+   
+   1. Install the extension.
+   2. Right-click on `frontend/index.html`.
+   3. Select "Open with Live Server".
+
 ## 🧠 Supported Models
 
 The application currently supports the following ONNX-optimized models:
